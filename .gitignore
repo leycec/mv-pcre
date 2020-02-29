@@ -1,35 +1,67 @@
+# --------------------( LICENSE                           )--------------------
+# Copyright (c) 2007-2020 Cecil Curry
+# See "LICENSE" for further details.
+#
+# --------------------( SYNOPSIS                          )--------------------
+# Git-specific dotfile instructing git to avoid tracking repository paths
+# matching one or more glob expressions listed below by default.
+#
+# --------------------( SEE ALSO                          )--------------------
+# For further details, see:
+#
+# * "man gitignore" for high-level commentary.
+# * "man 7 glob" for low-level commentary on glob syntax. Note, in particular,
+#   that glob() and hence ".gitignore" files support only a proper subset of
+#   full glob syntax supported by POSIX-compatible shells (e.g., bash, zsh).
+
+# ....................{ DIRS ~ top-level : lib            }....................
+# Dizt::Zilla-specific top-level directories.
+/.build/
+
+# ExtUtils::MakeMaker-specific top-level directories.
+/blib/
+/_eumm/
+
+# ....................{ DIRS ~ any level                  }....................
+# Dependency-agnostic subdirectories to unconditionally whitelist.
 !Build/
-.last_cover_stats
+
+# ....................{ DIRS ~ any level : lib            }....................
+# Devel::Cover-specific subdirectories.
+cover_db/
+
+# Module::Build-specific subdirectories.
+_build/
+
+# Module::Install-specific subdirectories.
+inc/
+
+# ....................{ FILES ~ top-level                 }....................
+# Dependency-agnostic top-level files.
 /META.yml
 /META.json
 /MYMETA.*
-*.o
-*.pm.tdy
-*.bs
 
-# Devel::Cover
-cover_db/
-
-# Devel::NYTProf
-nytprof.out
-
-# Dizt::Zilla
-/.build/
-
-# Module::Build
-_build/
-Build
-Build.bat
-
-# Module::Install
-inc/
-
-# ExtUtils::MakeMaker
-/blib/
-/_eumm/
+# ....................{ FILES ~ top-level : lib           }....................
+# ExtUtils::MakeMaker-specific top-level files.
 /*.gz
 /Makefile
 /Makefile.old
 /MANIFEST.bak
 /pm_to_blib
 /*.zip
+
+# ....................{ FILES ~ any level                 }....................
+# Dependency-agnostic files.
+.last_cover_stats
+*.o
+*.pm.tdy
+*.bs
+
+# ....................{ FILES ~ any level : lib           }....................
+# Devel::NYTProf-specific files.
+nytprof.out
+
+# Module::Build-specific files.
+Build
+Build.bat
