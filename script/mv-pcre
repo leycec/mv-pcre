@@ -2,33 +2,34 @@
 
 =head1 NAME
 
-cp-pcre - Copy files by performing PCRE-style replacement on those files.
-mv-pcre - Move files by performing PCRE-style replacement on those files.
+mv-pcre - Move files or replace file contents with regular expressions
+cp-pcre - Copy files or replace file contents with regular expressions
 
 =head1 SYNOPSIS
 
-  cp-pcre [OPTION]... SEARCH-REGEX REPLACE-REGEX [SOURCE]... [DIRECTORY]
-  mv-pcre [OPTION]... SEARCH-REGEX REPLACE-REGEX [SOURCE]... [DIRECTORY]
+  cp-pcre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
+  mv-pcre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
 
   options:
 
-  -h,--help              Display this help message.
-  -q,--quiet             Do not print messages or prompt for interactive input.
-  -r,--recursive         If passed no [SOURCE]... files, recursively match all
-                         text files under current directory and subdirectories.
-                         (defaults to non-recursively matching all text files
-                          in current directory only)
-  -n,--file-names        Replace filenames by copying or moving. [default]
-  -c,--file-contents     Replace file contents in-place.
-  --no-file-names        Do not replace filenames.
-  --no-file-contents     Do not replace file contents in-place. [default]
-  --cp                   Copy rather than move files when replacing filenames.
+  -h,--help              display this help message
+  -q,--quiet             do not print messages or prompt for interactive input
+  -a,--ask               
+  -r,--recursive         if passed no [SOURCE]... files, recursively match all
+                         text files under current directory and subdirectories
+  --no-recursive         if passed no [SOURCE]... files, non-recursively match
+                         all text files under current directory only [default]
+  -n,--file-names        replace filenames by copying or moving [default]
+  --no-file-names        do not replace filenames
+  -c,--file-contents     replace file contents in-place
+  --no-file-contents     do not replace file contents in-place [default]
+  --cp                   copy rather than move files when replacing filenames
                          (default when run as "cp-pcre")
-  --mv                   Move rather than copy files when replacing filenames.
+  --mv                   move rather than copy files when replacing filenames
                          (default when run as "mv-pcre")
 
-  SEARCH-REGEX:  PCRE-compliant search pattern: e.g.,  '^(\d+)\s*(\w+)\.mp3$'
-  REPLACE-REGEX: PCRE-compliant replace pattern: e.g., '\1 ~ (\2).mp3.bak'
+  SEARCH-REGEX:  PCRE-based search pattern:  e.g., '^(\d+)\s*(\w+)\.mp3$'
+  REPLACE-REGEX: PCRE-based replace pattern: e.g., '\1 ~ (\2).mp3.bak'
 
   [SOURCE]...: One or more source files to be operated upon.
                (defaults to all text files under either:
@@ -47,13 +48,17 @@ Print this help message and exit.
 
 =item B<--quiet>
 
-Do not print informative messages or prompt the user for interactive input. By
-default, this script does print informative messages and prompt the user for
+Do I<not> print informative messages or prompt the user for interactive input.
+By default, this script prints informative messages and prompts the user for
 interactive input; that is, it behaves B<verbosely>.
 
 =item B<--recursive>
 
-Copy or move files recursively. (See B<DESCRIPTION>, below.)
+Recurse into subdirectories.
+
+=item B<--no-recursive>
+
+Do I<not> recurse into subdirectories.
 
 =item B<--file-names>
 
@@ -83,7 +88,7 @@ filename for the script begins in "mv": if so, it performs filename moving;
 otherwise, filename copying. To circumvent this automation, specify the
 B<--cp> or B<--mv> options. (The former forces copying; the latter, moving.)
 
-In general, things should simply work -- in simple, context-dependent fashion.
+In general, things should simply work.
 
 =item B<--file-contents>
 
@@ -115,56 +120,65 @@ moving files.
 
 =over 2
 
-=item B<search-pattern>
+=item B<SEARCH-REGEX>
 
-A Perl Compatible Regular Expression (PCRE), specifying which filenames and/or
-file-contents to match against. See "man perlre", "man perlrequick", and
-"man perlretut" for further details.
+Mandatory Perl Compatible Regular Expression (PCRE) search pattern matching all
+filenames and/or file contents to be replaced by the passed B<REPLACE-PATTERN>.
 
-This argument is not optional.
+=item B<REPLACE-PATTERN>
 
-=item B<replace-pattern>
+Mandatory Perl Compatible Regular Expression (PCRE) substitution pattern
+replacing all filename and/or file content substrings matched by the passed
+B<SEARCH-REGEX>.
 
-A Perl Compatible Regular Expression (PCRE), specifying how and with what to
-replace those matched filenames and/or file-contents. As above, see
-"man perlre", "man perlrequick", and "man perlretut" for further details.
+=item B<[SOURCE]...>
 
-This argument is not optional.
+Optional list of one or more source files to be copied or moved delimited by
+whitespace. If unspecified, this script operates on all files in the current
+working directory. (That is, it automatically appends all files in the current
+working directory to that list.)
 
-=item B<source-file ...>
+=item B<DIRECTORY>
 
-An optional list of source files to be copied or moved delimited by whitespace.
-If no such list is explicitly specified, this script operates on all files in
-the current working directory. (That is, it automatically appends all files in
-the current working directory to that list.)
-
-=item B<target-path>
-
-The optional path to copy or move the filename-replaced source files into. If
-no such path is explicity specified, this script copies or moves all such files
-into the current working directory ("in place," as it were).
+Optional dirname of the directory to copy or move the filename-replaced source
+files into. If unspecified, this script copies or moves all such files into the
+current working directory ("in place," as it were).
 
 =back
 
 =head1 DESCRIPTION
 
-This script copies or moves files by performing Perl Compatible Regular
-Expression (PCRE)-style replacement on those files.
+This script both:
 
-When called as "cp" or "cp-pcre", this script copies files; when called as "mv"
-or "mv-pcre", this script moves files. When called as neither, this script
-copies files, which seems the safer of the two evils.
+=over 2
 
-When no optional, explicit list of files to be copied or moved are passed to
-this script, this script automatically behaves as if all files in the current
-working directory had been passed to it; that is, it automatically performs the
-passed PCRE-style replacement on all files in the current directory.
+=item *
 
-When a path is passed in that optional, explicit list of files to be copied or
-moved, this script only performs the passed PCRE-style replacement on that
-path; it does not recursively perform the passed PCRE-style replacement on all
-files and paths in that path unless the "-r" or "--recursive" options are
-explicitly passed on the command-line.
+Moves and copies files by performing pattern replacement on passed filenames
+with the passed Perl Compatible Regular Expression (PCRE) and corresponding
+replacement (e.g., C<mv-pcre -r '^(\d+)\s*(.+?)\.mp3$' '\1~\2.mp3.bak'>,
+recursively renaming all matching MP3 files under the current directory).
+
+=item *
+
+Rewrites file contents in-place by performing pattern replacement on the
+plaintext contents of passed filenames with the passed PCRE and corresponding
+replacement (e.g., C<mv-pcre -cr '^(\d)--(\w)\.txt$' '\2~\1.doc'>, recursively
+rewriting all matching lines of all plaintext files under the current
+directory).
+
+=back
+
+When run as F<mv-pcre>, this script defaults to moving files; when run as
+F<cp-pcre>, this script defaults to copying files. When run as neither, this
+script defaults to copying files. Regardless of what this script is run as, the
+B<--file-contents> option unconditionally rewrites file contents in-place.
+
+When passed no list of files to be operated on, this script defaults to either:
+
+behaves as if all files in the current working directory had been passed to it;
+that is, it automatically performs the passed PCRE-style replacement on all
+files in the current directory.
 
 =head1 INSTALLATION
 
@@ -176,12 +190,13 @@ explicitly passed on the command-line.
 
 =head1 EXAMPLES
 
-  # Copy all files in "~/tmp" matching pattern "*.tmp" to "*.tmp.old".
+  # Copy all paths matching "~/tmp/*.tmp" "~/tmp/*.tmp.old".
   cd ~/tmp
   cp-pcre '\.tmp$' '.tmp.old'
 
-  # Or, more verbosely.
-  cp-pcre --file-names --cp '^(.*)\.tmp$' '\1.tmp.old' ~/tmp/*
+  # Copy all paths matching "~/tmp/*.tmp" "~/tmp/*.tmp.old", functionally
+  # equivalent to the prior example.
+  cp-pcre --file-names --cp '^(.*)\.tmp$' '\1.tmp.old' ~/tmp
 
   # Rename all files and paths in any directories below and including the
   # current directory matching pattern "01--whatis.txt", "02--updoc.txt", etc.,
@@ -199,9 +214,69 @@ your mileage may tragically vary.
 
 Consider submitting a new issue to L<our GitHub-hosted bug
 tracker|https://github.com/leycec/mv-pcre/issues> when things inevitably go
-awry.
+south of heaven.
+
+=head1 SEE ALSO
+
+=over 2
+
+=item *
+
+L<perlre>, L<perlrequick>, and L<perlretut> man pages for further details on
+PCRE syntax and semantics.
+
+=back
 
 =cut
+
+#FIXME: Add a new trivial "--no-recursive" option codifying that default.
+
+#FIXME: Add the following new options required for testing:
+#
+#* "--auto-ask", implicitly detecting whether stdout is attached to an
+#  interactive terminal and enabling "--ask" if so or "--no-ask" otherwise.
+#  This should be the default.
+#* "--ask", unconditionally prompting for confirmation after the preview.
+#* "--no-ask", unconditionally proceeding with operations after the preview.
+#FIXME: Develop a "Test::More"-based test suite after implementing the above.
+
+#FIXME: Develop a "Dist::Milla"-based installation script.
+
+#FIXME: When passed both the "--ask" *AND* "--file-contents" options, display a
+#non-interactive preview of all lines to be replaced in something resembling a
+#composite of human-readable "grep" and "diff" output. For example, a
+#replacement on line 258 of "muh_dir/muh_file" might resemble:
+#
+#    muh_dir/muh_file:
+#    258:-muh original line
+#        +muh mungedup line
+#
+#Naturally, care should be taken to truncate preview output to the line width
+#of the current terminal. When doing so, truncate everything *OTHER* than the
+#matched portion of the line (if feasible, of course). So it goes.
+
+#FIXME: Conditionally use an optional POD module colourizing "--help" output if
+#that module is currently usable on the local system. To do so, we'll probably
+#need to:
+#
+#* Stop passing "auto_help" to Getopt::Long::Configure().
+#* Manually handle the "--help" option by calling the pod2usage() function with
+#  at least the following options:
+#  * "-utf8", which should be passed unconditionally as *ALL* POD formatters
+#    should uspport UTF-8 in 2020.
+#  * "-formatter 'Pod::Text::Color'", which should be passed *ONLY* if the
+#    Pod::Text::Color module is locally available. This appears to be trivial,
+#    based on commentary at https://www.perlmonks.org/?node_id=27505:
+#    eval { require Pod::Text::Color };
+#    if ($@) {
+#      # Then "Pod::Text::Color" is available; do something!
+#    } else {
+#      # Then "Pod::Text::Color" is unavailable; do something!
+#    }
+#  * "-formatter 'Pod::Text::Termcap'", which should be passed *ONLY* if the
+#    Pod::Text::Termcap module is locally available but Pod::Text::Color is
+#    *NOT*. The latter appears to be preferable to the former.
+#FIXME: Conditionally colourize output when attached to a colorful terminal.
 
 # ....................{ PRAGMAS                           }....................
 use strict;
@@ -252,10 +327,10 @@ Getopt::Long::Configure
         'mv',
         'cp') &&
     defined $ARGV[0] &&
-    defined $ARGV[1]) ||
-pod2usage({ -exitval=> failure,
-            -message=> qq[${script_name}: v${VERSION}; GNU GPL v3; open, aspiring, and up.],
-            -verbose=> 2 });
+    defined $ARGV[1]) || pod2usage({
+        -exitval=> failure,
+        -verbose=> 2,
+    });
 
 # Define default values for undefined options. This is principally based on the
 # script name: e.g., when called as "subst-pcre," this script automatically
