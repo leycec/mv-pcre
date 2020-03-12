@@ -17,26 +17,24 @@ cp-pcre - Copy files or replace file contents with regular expressions
   -a,--ask               
   -r,--recursive         if passed no [SOURCE]... files, recursively match all
                          text files under current directory and subdirectories
-  --no-recursive         if passed no [SOURCE]... files, non-recursively match
-                         all text files under current directory only [default]
   -n,--file-names        replace filenames by copying or moving [default]
   --no-file-names        do not replace filenames
   -c,--file-contents     replace file contents in-place
   --no-file-contents     do not replace file contents in-place [default]
   --cp                   copy rather than move files when replacing filenames
-                         (default when run as "cp-pcre")
+                         [default when run as "cp-pcre"]
   --mv                   move rather than copy files when replacing filenames
-                         (default when run as "mv-pcre")
+                         [default when run as "mv-pcre"]
 
-  SEARCH-REGEX:  PCRE-based search pattern:  e.g., '^(\d+)\s*(\w+)\.mp3$'
-  REPLACE-REGEX: PCRE-based replace pattern: e.g., '\1 ~ (\2).mp3.bak'
+  SEARCH-REGEX:  PCRE-based search pattern:      e.g., '^(\d+)\s*(\w+)\.mp3$'
+  REPLACE-REGEX: PCRE-based replacement pattern: e.g., '\1 ~ (\2).mp3.bak'
 
   [SOURCE]...: One or more source files to be operated upon.
-               (defaults to all text files under either:
+               [defaults to all plaintext files under either:
                 * if passed "-r", current directory and subdirectories.
-                * else, current directory only.)
+                * else, current directory only.]
   DIRECTORY:   Directory to copy or move source files matching SEARCH-REGEX to.
-               (defaults to current directory)
+               [defaults to current directory]
 
 =head1 OPTIONS
 
@@ -56,63 +54,58 @@ interactive input; that is, it behaves B<verbosely>.
 
 Recurse into subdirectories.
 
-=item B<--no-recursive>
-
-Do I<not> recurse into subdirectories.
-
 =item B<--file-names>
 
-Whether or not to perform PCRE-style search-replacement on filenames. By
-default, this script does PCRE-style search-replacement on filenames. If you
-explicitly specify neither B<--file-names> or B<--file-contents>, this script
-automatically assumes and enables B<--file-names>.
+Move or copy files by replacing all substrings matching the passed
+Perl Compatible Regular Expression (PCRE) search pattern in all passed source
+filenames with the passed PCRE replacement pattern (e.g.,
+C<mv-pcre -r '^(\d+)\s*(.+?)\.mp3$' '\1~\2.mp3.bak'>, recursively renaming all
+matching MP3 files under the current directory).
 
-If B<--file-contents> is explicitly specified, but B<--file-names> is not, then
-this script doesn't automatically assume or enable B<--file-names> -- since, by
-specifying B<--file-contents>, you've specified that you cognizently know what
-you're doing. (An assumption, of course, that may not bear out...)
+If passed:
 
-If B<--file-contents> and B<--file-names> are both explicitly specified, then
-this script performs the same PCRE-style search-replacement on both file
-contents and filenames. It performs the file content replacement first; then,
-when that's been finished, performs the filename replacement. As it performs
-them separately, the files it performs file content replacement on may differ,
-entirely, from the files it performs filename replacement on. (Usually, this
-is what you want! The only files that should ever be subject to file content
-replacement are text files -- while all files, text or binary, may and should
-be subject to filename replacement.)
+=over 2
 
-By default, this script automatically discerns whether to copy or move files
-when performing PCRE-style search-replacement on filenames, by whether the
-filename for the script begins in "mv": if so, it performs filename moving;
-otherwise, filename copying. To circumvent this automation, specify the
-B<--cp> or B<--mv> options. (The former forces copying; the latter, moving.)
+=item *
 
-In general, things should simply work.
+Neither B<--file-names> nor B<--file-contents>, this option is enabled by
+default.
+
+=item *
+
+Both B<--file-names> and B<--file-contents>, the same replacement is performed
+first on file contents and then on filenames.
+
+=back
+
+See also B<--cp> and B<--mv>.
 
 =item B<--file-contents>
 
-Whether or not to perform PCRE-style search-replacement on file-contents. By
-default, this script does not perform PCRE-style search-replacement on
-file-contents. (That tends to be a destructive operation, particularly when
-performed recursively.)
+Rewrite file contents in-place by replacing all substrings matching the passed
+Perl Compatible Regular Expression (PCRE) search pattern in the plaintext
+contents of all passed source filenames with the passed PCRE replacement
+pattern (e.g., C<mv-pcre -cr '^(\d)--(\w)\.txt$' '\2~\1.doc'>, recursively
+rewriting all matching lines of all plaintext files under the current
+directory).
 
-When performing PCRE-style search-replacement on file-contents, this script
-ignores binary files and does not preemptively show the user a list of all
-files whose contents will be changed by that search-replacement.
+For safety, binary files are implicitly ignored when rewriting file contents.
 
-  Another day, another breath.
-  Another sorrow, another death.
+Disabled by default. See also B<--file-names>.
 
 =item B<--cp>
 
-Force this script to perform PCRE-style search-replacement on filenames by
-copying files.
+Replace filenames by copying rather than moving files.
+
+If passed neither B<--cp> nor B<--mv> and I<not> run as F<mv-pcre>, this option
+is enabled by default.
 
 =item B<--mv>
 
-Force this script to perform PCRE-style search-replacement on filenames by
-moving files.
+Replace filenames by moving rather than copying files.
+
+If passed neither B<--cp> nor B<--mv> and run as F<mv-pcre>, this option is
+enabled by default.
 
 =back
 
@@ -133,16 +126,28 @@ B<SEARCH-REGEX>.
 
 =item B<[SOURCE]...>
 
-Optional list of one or more source files to be copied or moved delimited by
-whitespace. If unspecified, this script operates on all files in the current
-working directory. (That is, it automatically appends all files in the current
-working directory to that list.)
+Optional whitespace-delimited list of one or more source filenames to be
+operated upon. Defaults to either:
+
+=over 2
+
+=item *
+
+If passed B<--recursive>, all plaintext files recursively discovered under the
+current directory and all subdirectories of the current directory.
+
+=item *
+
+Else, all plaintext files non-recursively discovered under only the current
+directory.
+
+=back
 
 =item B<DIRECTORY>
 
-Optional dirname of the directory to copy or move the filename-replaced source
-files into. If unspecified, this script copies or moves all such files into the
-current working directory ("in place," as it were).
+Optional dirname of the target directory to copy or move source filenames into
+when replacing filenames. Defaults to the current directory. Ignored if passed
+B<--file-contents>.
 
 =back
 
@@ -154,39 +159,17 @@ This script both:
 
 =item *
 
-Moves and copies files by performing pattern replacement on passed filenames
-with the passed Perl Compatible Regular Expression (PCRE) and corresponding
-replacement (e.g., C<mv-pcre -r '^(\d+)\s*(.+?)\.mp3$' '\1~\2.mp3.bak'>,
-recursively renaming all matching MP3 files under the current directory).
+Moves and copies files by replacing all substrings matching the passed
+Perl Compatible Regular Expression (PCRE) search pattern in all passed source
+filenames with the passed PCRE replacement pattern 
 
 =item *
 
-Rewrites file contents in-place by performing pattern replacement on the
-plaintext contents of passed filenames with the passed PCRE and corresponding
-replacement (e.g., C<mv-pcre -cr '^(\d)--(\w)\.txt$' '\2~\1.doc'>, recursively
-rewriting all matching lines of all plaintext files under the current
-directory).
+Rewrites file contents in-place by replacing all substrings matching the passed
+PCRE search pattern in the plaintext contents of all passed source filenames
+with the passed PCRE replacement pattern.
 
 =back
-
-When run as F<mv-pcre>, this script defaults to moving files; when run as
-F<cp-pcre>, this script defaults to copying files. When run as neither, this
-script defaults to copying files. Regardless of what this script is run as, the
-B<--file-contents> option unconditionally rewrites file contents in-place.
-
-When passed no list of files to be operated on, this script defaults to either:
-
-behaves as if all files in the current working directory had been passed to it;
-that is, it automatically performs the passed PCRE-style replacement on all
-files in the current directory.
-
-=head1 INSTALLATION
-
-  # Install Perl. (Any decently recent version should do: say, >= 5.6.0.)
-  sudo emerge perl
-
-  # Copy or move this script to some $PATH-accessible path.
-  sudo mv cp-pcre /usr/local/bin
 
 =head1 EXAMPLES
 
@@ -208,11 +191,11 @@ files in the current directory.
 
 =head1 BUGS
 
-Absolutely none! Very well, probably more than several. Although this script
+Absolutely none! Very well. Probably more than several. Although this script
 formed the core backbone of my CLI-based development workflow for two decades,
 your mileage may tragically vary.
 
-Consider submitting a new issue to L<our GitHub-hosted bug
+Please submit issues to L<our GitHub-hosted bug
 tracker|https://github.com/leycec/mv-pcre/issues> when things inevitably go
 south of heaven.
 
@@ -229,20 +212,28 @@ PCRE syntax and semantics.
 
 =cut
 
-#FIXME: Add a new trivial "--no-recursive" option codifying that default.
-
 #FIXME: Add the following new options required for testing:
 #
-#* "--auto-ask", implicitly detecting whether stdout is attached to an
-#  interactive terminal and enabling "--ask" if so or "--no-ask" otherwise.
-#  This should be the default.
-#* "--ask", unconditionally prompting for confirmation after the preview.
-#* "--no-ask", unconditionally proceeding with operations after the preview.
+#* "-i,--interactive", unconditionally prompting for confirmation after the
+#   preview.
+#* "--no-interactive", unconditionally proceeding with operations after the
+#  preview.
+#
+#If passed neither, implicitly detect whether stdout is attached to an
+#interactive terminal and enabling "-i" if so or "--no-interactive" otherwise.
+#FIXME: Display a warning when prompting for confirmation if any filenames to
+#be replaced already exist in the target directory.
 #FIXME: Develop a "Test::More"-based test suite after implementing the above.
 
 #FIXME: Develop a "Dist::Milla"-based installation script.
 
-#FIXME: When passed both the "--ask" *AND* "--file-contents" options, display a
+#FIXME: Display warnings when passed one or more binary files.
+
+#FIXME: Fail with a fatal error when passed one or more source directories and
+#*NOT* passed the "--recursive" option.
+#FIXME: Improve documentation for the "--recursive" option.
+
+#FIXME: When passed both the "-i" *AND* "--file-contents" options, display a
 #non-interactive preview of all lines to be replaced in something resembling a
 #composite of human-readable "grep" and "diff" output. For example, a
 #replacement on line 258 of "muh_dir/muh_file" might resemble:
