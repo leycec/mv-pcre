@@ -182,7 +182,7 @@ This script both:
 
 Moves and copies files by replacing all substrings matching the passed
 Perl Compatible Regular Expression (PCRE) search pattern in all passed source
-filenames with the passed PCRE replacement pattern 
+filenames with the passed PCRE replacement pattern.
 
 =item *
 
@@ -629,6 +629,11 @@ sub substitute_filenames() {
             $source_path = $current_path;
         }
 
+        #FIXME: Ideally, this should leverage the block form of "eval":
+        #    https://perldoc.perl.org/functions/eval.html
+        #If that fails to suffice, we should reconsider usage of "eval"
+        #entirely. Surely Perl supports dynamic substitutions with variables?
+        #This strikes us as extreme overkill.
         $target_file_name = $source_file_name;
         eval "\$target_file_name =~ s/$from_pattern/$into_pattern/g";
 
@@ -644,8 +649,9 @@ sub substitute_filenames() {
     }
 
     # ~~~~~~~~~~~~~~~~~~{ real run                          }~~~~~~~~~~~~~~~~~~
-    if (!@source_file_to_target_file_list) { curse "no substitutions to make!"; }
-    else {
+    if (!@source_file_to_target_file_list) {
+        curse "no substitutions to make!";
+    } else {
         if (query_bool('would you like to make these filename substitutions?')) {
             utter "${operation_string}...\n\n";
             my ($source_file, $target_file);
