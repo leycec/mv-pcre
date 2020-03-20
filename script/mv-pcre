@@ -336,6 +336,9 @@ PCRE syntax and semantics.
 #during path visitation with a proper ANSI-based progress bar. Presumably,
 #third-party modules facilitating this already exist. Use 'em!
 
+#FIXME: UTF8. In theory, enabling the folluwing under "PRAGMAS" might suffice:
+#    use utf8;
+
 #FIXME: I18N. How does that even work in Perl? Yes! Sensibly, the third-party
 #"i18n" module supports an exceedingly trivial API supporting all standard use
 #cases. See also: https://metacpan.org/pod/i18n
@@ -543,6 +546,21 @@ my @source_files_and_paths = @ARGV;
                     #non-ideal. Instead, we should absolutely discover the
                     #absolute filename of the Perl interpreter running the
                     #current script and explicitly invoke that instead.
+                    #FIXME: Indeed! Research suggests the following
+                    #platform-portable solution, stripped wholesale from the
+                    #official "man perlport":
+                    #
+                    #    use Config;
+                    #    my $thisperl = $Config{perlpath};
+                    #    if ($^O ne 'VMS') {
+                    #        $thisperl .= $Config{_exe}
+                    #            unless $thisperl =~ m/\Q$Config{_exe}\E$/i;
+                    #    }
+                    #
+                    #See also this relevant (albeit less portable)
+                    #StackOverflow solution:
+                    #    https://stackoverflow.com/a/10393492/2809027
+
                     #FIXME: Non-ideal, as this results in unnecessary write
                     #operations and hence wear-leveling. Instead:
                     #
