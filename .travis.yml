@@ -1,0 +1,33 @@
+# ====================[ .travis.yml                       ]====================
+#
+# --------------------( SYNOPSIS                          )--------------------
+# Travis Continuous Integration (CI) configuration exercising this project's
+# test suite on all commits and pull requests.
+#
+# --------------------( SEE ALSO                          )--------------------
+# * https://github.com/travis-perl/helpers#example-simple-travisyml
+#   Canonical template trivially building and testing Perl projects on Travis,
+#   regardless of specific build system (e.g., Dist::Zilla, Minilla) or testing
+#   framework (e.g., Test::More, Test2). Note that effectively *ALL*
+#   GitHub-hosted Perl projects defining ".travis.yml" leverage this template.
+
+# ....................{ PERL                              }....................
+language: perl
+perl:
+  # Newest stable release of the Perl interpreter supported by this project.
+  - "5.30"
+  # Oldest stable release of the Perl interpreter supported by this project.
+  - "5.20"
+
+# ....................{ CACHE                             }....................
+# Cache previously downloaded project dependencies across CI runs.
+cache:
+  directories:
+    - $HOME/perl5
+
+# ....................{ MAIN                              }....................
+# One-liners for heroic justice! Specifically, this automation:
+# * Installs this project and *ALL* runtime and test-time dependencies thereof.
+# * Exercises each test of this project's test suite in parallel.
+before_install:
+  - eval $(curl https://travis-perl.github.io/init) --auto

@@ -23,14 +23,8 @@ cp-pcre - Copy files or replace file contents with regular expressions
   -r,--recursive         if passed no [SOURCE]... files, recursively match all
                          text files under current directory and subdirectories
                          (defaults to non-recursive matching)
-  -i,--interactive       print a dry run and prompt before replacing files
-                         [default if run under interactive terminal]
   -q,--quiet             do not print messages or prompt for interactive input
-  --color                print colorful output via ANSI escape sequences
-                         [default if run under colorful terminal]
-  --no-color             do not print colorful output via ANSI escape sequences
-                         [default if run under monochrome or no terminal]
-  -h,--help              print this help message
+  -?,--help              print this help message
 
   SEARCH-REGEX:  PCRE-based search pattern:      e.g., '^(\d+)\s*(\w+)\.mp3$'
   REPLACE-REGEX: PCRE-based replacement pattern: e.g., '\1 ~ (\2).mp3.bak'
@@ -236,7 +230,9 @@ PCRE syntax and semantics.
 #FIXME: Add the following new options required for testing:
 #
 #* "-i,--interactive", unconditionally prompting for confirmation after the
-#   preview.
+#   preview. Option documentation should read as follows:
+#      -i,--interactive       print a dry run and prompt before replacing files
+#                             [default if run under interactive terminal]
 #* "--no-interactive", unconditionally proceeding with operations after the
 #  preview.
 #
@@ -331,7 +327,11 @@ PCRE syntax and semantics.
 #    *NOT*. The latter appears to be preferable to the former.
 #FIXME: Conditionally colourize output when attached to a colorful terminal.
 #FIXME: Define "--color" and "--no-color" options enabling users to externally
-#configure colourization support.
+#configure colourization support. Documentation is as follows:
+#    --color                print colorful output via ANSI escape sequences
+#                           [default if run under colorful terminal]
+#    --no-color             do not print colorful output via ANSI escape sequences
+#                           [default if run under monochrome or no terminal]
 #FIXME: When colorful, replace current printing of "." and "!" characters
 #during path visitation with a proper ANSI-based progress bar. Presumably,
 #third-party modules facilitating this already exist. Use 'em!
@@ -343,18 +343,30 @@ PCRE syntax and semantics.
 #"i18n" module supports an exceedingly trivial API supporting all standard use
 #cases. See also: https://metacpan.org/pod/i18n
 
+#FIXME: For readability, privatize function names (e.g., from
+#substitute_filenames() to _substitute_filenames()).
+
 # ....................{ PRAGMAS                           }....................
 use strict;
 use warnings;
 
 # ....................{ DEPENDENCIES                      }....................
-use Carp;
+#FIXME: For maintainability, all existing implicit imports of global
+#subroutines (e.g., croak() from the "Carp" module) should be refactored into
+#explicit imports: e.g.,
+#    use Carp qw(croak)
+
+use Carp qw(croak);
 use File::Basename;
 use File::Copy;
 use File::Find;
 use File::Spec::Functions qw(curdir abs2rel rel2abs);
 use Getopt::Long;
-use Pod::Usage;
+use Pod::Usage qw(pod2usage);
+
+#FIXME: "Term::ReadLine::Gnu" is vastly superior, albeit unavailable under
+#Windows. There likely exist other superior alternatives as well. Generalize to
+#conditionally support these alternatives, falling back to "Term::ReadLine".
 use Term::ReadLine;
 
 # ....................{ CONSTANTS                         }....................
@@ -369,45 +381,95 @@ use constant {
 # ....................{ VARIABLES                         }....................
 my $VERSION = '1.0.0';
 
+#FIXME: This doesn't seem particularly robust. StackOverflow, help us now!
+#FIXME: Capitalize.
 my $script_name = basename $0;
+
+#FIXME: Rename to "$CURRENT_DIRNAME".
 my $current_path = rel2abs(curdir()) . '/';
 
+#FIXME: Rename to "$VCS_DIR_BASENAME_REGEX".
 # Compiled regular expression matching version control system directory
 # basenames for all popular modern-day version control systems. This script
 # ignores directories whose basename matches this regular expression.
 my $vcs_directory_basename_regex = qr~(/|^)\.(bzr|cvs|git|hg|svn)(/|$)~;
 
+# ....................{ HELP                              }....................
+#FIXME: Augment with a subroutine signature.
+# Display the passed string if any as a non-fatal warning, display an
+# additional non-fatal warning citing the "--help" option, and immediately halt
+# the current process with the standard failure exit code.
+#
+# This subroutine is strongly inspired by the following StackOverflow answer:
+#     https://stackoverflow.com/a/45336618/2809027
+sub _print_usage_error {
+    my ($error_message) = @_;
+
+    # If passed an error message, display that as a non-fatal warning.
+    if ($error_message) {
+        chomp($error_message);
+        warn("$script_name: $error_message\n");
+    }
+
+    # Display an additional non-fatal warning citing the "--help" option.
+    warn("$script_name: See \"$script_name --help\" for further details.\n");
+
+    # Halt the current process with the standard failure exit code.
+    exit(failure);
+}
+
+# Display a synopsis of the POD documentation embedded in this script.
+sub _print_usage_help {
+    pod2usage({-exitval=> success, -verbose=> 2});
+}
+
 # ....................{ OPTIONS                           }....................
 my %options;
 
-# Enable first-level bundling; e.g., auto-expand a passed "-vax" to "-v -a -x";
-# all other configuration settings should be reasonably self-explanatory.
+# Configure option parsing. Dismantled, this is:
+#
+# * "bundling", enabling first-level bundling (e.g., auto-expanding a passed
+#   "-vax" list of bundled options to "-v -a -x").
+# * "require_order", requiring all options be passed prior to arguments. By
+#   default, options and arguments are permitted to be freely intermingled.
+#   Since the default is POSIX-incompatible (and frankly insane), we revert to
+#   the POSIX default.
+#
+# Note that the "auto_help" option automatically calling pod2usage() does *NOT*
+# behave as expected, for unknown reasons. Ergo we do so manually instead.
 Getopt::Long::Configure qw(
-    auto_help
     auto_version
     bundling
     gnu_compat
     no_ignore_case
     posix_default
+    require_order
 );
 
-(Getopt::Long::GetOptions(\%options,
-        'help|h|?',
-        'quiet|q',
-        'recursive|r|R',
-        'file-contents|c!',
-        'file-names|n!',
-        'mv',
-        'cp') &&
-    defined $ARGV[0] &&
-    defined $ARGV[1]) || pod2usage({
-        -exitval=> failure,
-        -verbose=> 2,
-    });
+# Parse options. If the caller passed one or more invalid options (as insanely
+# indicated by this function call failing with a non-zero return value),
+# display a fatal error referencing the "--help" option.
+Getopt::Long::GetOptions(
+    \%options,
+    'cp',
+    'mv',
+    'file-contents|c!',
+    'file-names|n!',
+    'help|?' => \&_print_usage_help,
+    'recursive|r|R',
+    'quiet|q',
+) or _print_usage_error();
 
+# If the caller passed an insufficient number of mandatory arguments, display a
+# fatal error referencing both that and the "--help" option.
+@ARGV >= 2 or _print_usage_error(
+    'Expected at least one regular expression and one replacement pattern.');
+
+# ....................{ OPTIONS ~ defaults                }....................
 # Define default values for undefined options. This is principally based on the
 # script name: e.g., when called as "subst-pcre," this script automatically
 # enables the "--file-contents" option and disables the "--file-names" option.
+
 if ($script_name =~ m~^sub~) {
     if (!defined $options{'file-contents'}) { $options{'file-contents'} = true; }
     if (!defined $options{'file-names'})    { $options{'file-names'} = false; }
@@ -422,6 +484,7 @@ sub mutter(;$) { my $slur = shift || ""; $options{quiet} || print $slur; }
 sub utter (;$) { my $slur = shift || ""; $options{quiet} || print "${script_name}: $slur"; }
 sub curse (;$) { my $slur = shift || "";                    croak "${script_name}: $slur\n"; }
 
+#FIXME: Avoid doing any of this if "$options{quiet}" is false.
 {
     my $term = new Term::ReadLine $script_name;
 
@@ -444,11 +507,14 @@ sub query_bool(;$) {
 $| = 1;
 
 # ....................{ PROCESS HANDLING                  }....................
+#FIXME: Possibly unlikely to behave as expected under Windows, due to process
+#exit codes being non-POSIX-compliant. We probably want to leverage a standard
+#Perl module instead.
 sub run($) {
     my $shell_command = shift;
 
-  system($shell_command) == success ||
-    curse qq{"$shell_command" failed with: \{$?\} $!};
+    system($shell_command) == success ||
+        curse qq{"$shell_command" failed with: \{$?\} $!};
 }
 
 # ....................{ INIT                               }....................
@@ -560,6 +626,11 @@ my @source_files_and_paths = @ARGV;
                     #See also this relevant (albeit less portable)
                     #StackOverflow solution:
                     #    https://stackoverflow.com/a/10393492/2809027
+                    #FIXME: Actually, why are we even forking processes in the
+                    #first place? We vaguely recall testing both this and the
+                    #pure-Perl approach, but can't quite recall the outcome.
+                    #Anyway, it's been over a decade; if feasible, we really
+                    #should just be implementing this in-process.
 
                     #FIXME: Non-ideal, as this results in unnecessary write
                     #operations and hence wear-leveling. Instead:
