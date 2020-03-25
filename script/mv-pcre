@@ -1,232 +1,34 @@
 #!/usr/bin/env perl
 
-=head1 NAME
-
-mv-pcre - Move files or replace file contents with regular expressions
-cp-pcre - Copy files or replace file contents with regular expressions
-
-=head1 SYNOPSIS
-
-  cp-pcre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
-  mv-pcre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
-
-  options:
-
-  -c,--file-contents     replace file contents in-place
-  --no-file-contents     do not replace file contents in-place [default]
-  -n,--file-names        replace filenames by copying or moving [default]
-  --no-file-names        do not replace filenames
-  --cp                   copy rather than move files when replacing filenames
-                         [default if run as "cp-pcre"]
-  --mv                   move rather than copy files when replacing filenames
-                         [default if run as "mv-pcre"]
-  -r,--recursive         if passed no [SOURCE]... files, recursively match all
-                         text files under current directory and subdirectories
-                         (defaults to non-recursive matching)
-  -q,--quiet             do not print messages or prompt for interactive input
-  -?,--help              print this help message
-
-  SEARCH-REGEX:  PCRE-based search pattern:      e.g., '^(\d+)\s*(\w+)\.mp3$'
-  REPLACE-REGEX: PCRE-based replacement pattern: e.g., '\1 ~ (\2).mp3.bak'
-
-  [SOURCE]...: One or more source files to be operated upon.
-               [defaults to all plaintext files under either:
-                * if passed "-r", current directory and subdirectories
-                * else, current directory only]
-  DIRECTORY:   Directory to copy or move source files matching SEARCH-REGEX to.
-               [defaults to current directory]
-
-=head1 OPTIONS
-
-=over 2
-
-=item B<--cp>
-
-Replace filenames by copying rather than moving files.
-
-If passed neither B<--cp> nor B<--mv> and I<not> run as F<mv-pcre>, this option
-is enabled by default.
-
-=item B<--mv>
-
-Replace filenames by moving rather than copying files.
-
-If passed neither B<--cp> nor B<--mv> and run as F<mv-pcre>, this option is
-enabled by default.
-
-=item B<--file-contents>
-
-Rewrite file contents in-place by replacing all substrings matching the passed
-Perl Compatible Regular Expression (PCRE) search pattern in the plaintext
-contents of all passed source filenames with the passed PCRE replacement
-pattern (e.g., C<mv-pcre -cr '^(\d)--(\w)\.txt$' '\2~\1.doc'>, recursively
-rewriting all matching lines of all plaintext files under the current
-directory).
-
-For safety, binary files are implicitly ignored when rewriting file contents.
-
-Disabled by default. See also B<--file-names>.
-
-=item B<--file-names>
-
-Move or copy files by replacing all substrings matching the passed
-Perl Compatible Regular Expression (PCRE) search pattern in all passed source
-filenames with the passed PCRE replacement pattern (e.g.,
-C<mv-pcre -r '^(\d+)\s*(.+?)\.mp3$' '\1~\2.mp3.bak'>, recursively renaming all
-matching MP3 files under the current directory).
-
-If passed:
-
-=over 2
-
-=item *
-
-Neither B<--file-names> nor B<--file-contents>, this option is enabled by
-default.
-
-=item *
-
-Both B<--file-names> and B<--file-contents>, the same replacement is performed
-first on file contents and then on filenames.
-
-=back
-
-See also B<--cp> and B<--mv>.
-
-=item B<--help>
-
-Print this help message and exit.
-
-=item B<--quiet>
-
-Do I<not> print informative messages or prompt the user for interactive input.
-By default, this script prints informative messages and prompts the user for
-interactive input; that is, it behaves B<verbosely>.
-
-=item B<--recursive>
-
-Recursively find plaintext files to be replaced from relevant directories.
-Specifically, if passed:
-
-=over 2
-
-=item *
-
-No B<[SOURCE]...> paths, recursively match all plaintext files residing under
-the current directory and all subdirectories of this directory.
-
-=item *
-
-One or more B<[SOURCE]...> paths, recursively match all plaintext files
-residing under all B<[SOURCE]...> paths that are directories.
-
-=back
-
-=back
-
-=head1 ARGUMENTS
-
-=over 2
-
-=item B<SEARCH-REGEX>
-
-Mandatory Perl Compatible Regular Expression (PCRE) search pattern matching all
-filenames and/or file contents to be replaced by the passed B<REPLACE-PATTERN>.
-
-=item B<REPLACE-PATTERN>
-
-Mandatory Perl Compatible Regular Expression (PCRE) substitution pattern
-replacing all filename and/or file content substrings matched by the passed
-B<SEARCH-REGEX>.
-
-=item B<[SOURCE]...>
-
-Optional whitespace-delimited list of one or more source filenames to be
-operated upon. Defaults to either:
-
-=over 2
-
-=item *
-
-If passed B<--recursive>, all plaintext files recursively discovered under the
-current directory and all subdirectories of this directory.
-
-=item *
-
-Else, all plaintext files non-recursively discovered under only the current
-directory.
-
-=back
-
-=item B<DIRECTORY>
-
-Optional dirname of the target directory to copy or move source filenames into
-when replacing filenames. Defaults to the current directory. Ignored if passed
-B<--file-contents>.
-
-=back
-
-=head1 DESCRIPTION
-
-This script both:
-
-=over 2
-
-=item *
-
-Moves and copies files by replacing all substrings matching the passed
-Perl Compatible Regular Expression (PCRE) search pattern in all passed source
-filenames with the passed PCRE replacement pattern.
-
-=item *
-
-Rewrites file contents in-place by replacing all substrings matching the passed
-PCRE search pattern in the plaintext contents of all passed source filenames
-with the passed PCRE replacement pattern.
-
-=back
-
-=head1 EXAMPLES
-
-  # Copy all paths matching "~/tmp/*.tmp" "~/tmp/*.tmp.old".
-  cd ~/tmp
-  cp-pcre '\.tmp$' '.tmp.old'
-
-  # Copy all paths matching "~/tmp/*.tmp" "~/tmp/*.tmp.old", functionally
-  # equivalent to the prior example.
-  cp-pcre --file-names --cp '^(.*)\.tmp$' '\1.tmp.old' ~/tmp
-
-  # Rename all files and paths in any directories below and including the
-  # current directory matching pattern "01--whatis.txt", "02--updoc.txt", etc.,
-  # to "whatis~01.doc", "updoc~02.doc", etc.; and also change any strings in
-  # the contents of any text files in any directories below and including the
-  # current directory matching that same pattern to that some replacement text.
-  # (Power; glorious, gladdening, rawly maddening power.)
-  mv-pcre --recursive --file-names --file-contents '^(\d)--(\w)\.txt$' '\2~\1.doc'
-
-=head1 BUGS
-
-B<Absolutely none.> Very well... probably more than several. Although this
-script formed the core backbone of my CLI-based development workflow for two
-decades, your mileage may (tragically) vary.
-
-Please submit issues to L<our GitHub-hosted bug
-tracker|https://github.com/leycec/mv-pcre/issues> when things inevitably go
-south of computational heaven.
-
-=head1 SEE ALSO
-
-=over 2
-
-=item *
-
-L<perlre>, L<perlrequick>, and L<perlretut> man pages for further details on
-PCRE syntax and semantics.
-
-=back
-
-=cut
-
+# ....................{ PRAGMAS                           }....................
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# CAVEATS: This version requirement *MUST* be synchronized between:
+# * The following "use" statement.
+# * All external build requirements file(s).
+# * All downstream third-party packages, including:
+#   * Gentoo Linux ebuilds packaging this script.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# Enforce the minimum version of Perl required by this script. Since Perl
+# currently lacks any automated means of deciding this, this version *MUST* be
+# manually decided by taking the minimum of the following:
+#
+# * The "Minimum version of perl" output by the third-party "perlver" script.
+#   Currently, this is Perl 5.8.0.
+# * The minimum of the first Perl version required by all core Perl modules
+#   required below. See the "DEPENDENCIES" section for further details.
+#   Currently, this is Perl 5.6.0.
+#
+# For safety, this *MUST* be the first statement of this script.
+use v5.8.0;
+
+# Enforce strictness for sanity. These should be the default, but... *shrug*
+#
+# For safety, these *MUST* be the second and third statements of this script.
+use strict;
+use warnings;
+
+# ....................{ TODO                              }....................
 #FIXME: Add the following new options required for testing:
 #
 #* "-i,--interactive", unconditionally prompting for confirmation after the
@@ -268,6 +70,11 @@ PCRE syntax and semantics.
 #  little point in attempting to use any of those, as Perl >= 5.20 already
 #  ships with builtin support. In 2020, it's highly unlikely that any users
 #  will be running Perl < 5.20.
+#FIXME: Actually, let's not do this. We'd genuinely prefer to support Perl all
+#the way back to Perl 5.8. Requiring Perl 5.20 simply for subroutine signatures
+#strikes us as insensible. Instead, examine our existing usage of prototypes to
+#decide whether or not we're actually doing so correctly. If not, consider
+#removing them entirely; if so, consider squelching "perlcritic" warnings.
 
 #FIXME: Replace all existing usage of builtins exported by the "Carp" module
 #(e.g., carp, croak) with the default builtins die() and warn(). Why? Because
@@ -346,28 +153,44 @@ PCRE syntax and semantics.
 #FIXME: For readability, privatize function names (e.g., from
 #substitute_filenames() to _substitute_filenames()).
 
-# ....................{ PRAGMAS                           }....................
-use strict;
-use warnings;
-
-# ....................{ DEPENDENCIES                      }....................
 #FIXME: For maintainability, all existing implicit imports of global
 #subroutines (e.g., croak() from the "Carp" module) should be refactored into
 #explicit imports: e.g.,
 #    use Carp qw(croak)
 
-use Carp qw(croak);
-use File::Basename;
-use File::Copy;
-use File::Find;
+# ....................{ DEPENDENCIES                      }....................
+# Core Perl modules required by this script. For portability, this script
+# requires *NO* third-party non-core Perl modules. *BEFORE* requiring any new
+# core Perl module, utilize the external "corelist" command installed with most
+# Perl installations to:
+#
+# * Confirm the prospective module is actually core like so:
+#       $ corelist Module::Noncore;
+#       Module::Noncore was not in CORE (or so I think)
+# * Confirm the first Perl version required by this module like so. Note that
+#   "corelist" prints versions as non-human-readable floats rather than
+#   human-readable version specifiers. To convert between the two, simply add
+#   an implicit "." delimiter after the third decimal place and truncate
+#   leading zeroes (e.g., from "5.024001" to "5.24.1"):
+#       $ corelist 'Module::Core';
+#       Module::Core was first released with perl 5.005
+#   * Add a comment associating that module with that requirement.
+#   * If this requirement exceeds the minimum Perl version required above, bump
+#     the latter.
+
+use Carp qw(croak);              # ...first bundled with Perl 5.0.0.
+use File::Basename;              # ...first bundled with Perl 5.0.0.
+use File::Copy;                  # ...first bundled with Perl 5.2.0.
+use File::Find;                  # ...first bundled with Perl 5.0.0.
+# First bundled with Perl 5.5.4.
 use File::Spec::Functions qw(curdir abs2rel rel2abs);
-use Getopt::Long;
-use Pod::Usage qw(pod2usage);
+use Getopt::Long;                # ...first bundled with Perl 5.0.0.
+use Pod::Usage qw(pod2usage);    # ...first bundled with Perl 5.6.0.
 
 #FIXME: "Term::ReadLine::Gnu" is vastly superior, albeit unavailable under
 #Windows. There likely exist other superior alternatives as well. Generalize to
 #conditionally support these alternatives, falling back to "Term::ReadLine".
-use Term::ReadLine;
+use Term::ReadLine;              # ...first bundled with Perl 5.2.0.
 
 # ....................{ CONSTANTS                         }....................
 use constant {
@@ -789,6 +612,232 @@ sub substitute_filenames() {
 
   1
 __END__
+
+# ....................{ POD                               }....................
+=head1 NAME
+
+mv-pcre - Move files or replace file contents with regular expressions
+cp-pcre - Copy files or replace file contents with regular expressions
+
+=head1 SYNOPSIS
+
+  cp-pcre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
+  mv-pcre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
+
+  options:
+
+  -c,--file-contents     replace file contents in-place
+  --no-file-contents     do not replace file contents in-place [default]
+  -n,--file-names        replace filenames by copying or moving [default]
+  --no-file-names        do not replace filenames
+  --cp                   copy rather than move files when replacing filenames
+                         [default if run as "cp-pcre"]
+  --mv                   move rather than copy files when replacing filenames
+                         [default if run as "mv-pcre"]
+  -r,--recursive         if passed no [SOURCE]... files, recursively match all
+                         text files under current directory and subdirectories
+                         (defaults to non-recursive matching)
+  -q,--quiet             do not print messages or prompt for interactive input
+  -?,--help              print this help message
+
+  SEARCH-REGEX:  PCRE-based search pattern:      e.g., '^(\d+)\s*(\w+)\.mp3$'
+  REPLACE-REGEX: PCRE-based replacement pattern: e.g., '\1 ~ (\2).mp3.bak'
+
+  [SOURCE]...: One or more source files to be operated upon.
+               [defaults to all plaintext files under either:
+                * if passed "-r", current directory and subdirectories
+                * else, current directory only]
+  DIRECTORY:   Directory to copy or move source files matching SEARCH-REGEX to.
+               [defaults to current directory]
+
+=head1 OPTIONS
+
+=over 2
+
+=item B<--cp>
+
+Replace filenames by copying rather than moving files.
+
+If passed neither B<--cp> nor B<--mv> and I<not> run as F<mv-pcre>, this option
+is enabled by default.
+
+=item B<--mv>
+
+Replace filenames by moving rather than copying files.
+
+If passed neither B<--cp> nor B<--mv> and run as F<mv-pcre>, this option is
+enabled by default.
+
+=item B<--file-contents>
+
+Rewrite file contents in-place by replacing all substrings matching the passed
+Perl Compatible Regular Expression (PCRE) search pattern in the plaintext
+contents of all passed source filenames with the passed PCRE replacement
+pattern (e.g., C<mv-pcre -cr '^(\d)--(\w)\.txt$' '\2~\1.doc'>, recursively
+rewriting all matching lines of all plaintext files under the current
+directory).
+
+For safety, binary files are implicitly ignored when rewriting file contents.
+
+Disabled by default. See also B<--file-names>.
+
+=item B<--file-names>
+
+Move or copy files by replacing all substrings matching the passed
+Perl Compatible Regular Expression (PCRE) search pattern in all passed source
+filenames with the passed PCRE replacement pattern (e.g.,
+C<mv-pcre -r '^(\d+)\s*(.+?)\.mp3$' '\1~\2.mp3.bak'>, recursively renaming all
+matching MP3 files under the current directory).
+
+If passed:
+
+=over 2
+
+=item *
+
+Neither B<--file-names> nor B<--file-contents>, this option is enabled by
+default.
+
+=item *
+
+Both B<--file-names> and B<--file-contents>, the same replacement is performed
+first on file contents and then on filenames.
+
+=back
+
+See also B<--cp> and B<--mv>.
+
+=item B<--help>
+
+Print this help message and exit.
+
+=item B<--quiet>
+
+Do I<not> print informative messages or prompt the user for interactive input.
+By default, this script prints informative messages and prompts the user for
+interactive input; that is, it behaves B<verbosely>.
+
+=item B<--recursive>
+
+Recursively find plaintext files to be replaced from relevant directories.
+Specifically, if passed:
+
+=over 2
+
+=item *
+
+No B<[SOURCE]...> paths, recursively match all plaintext files residing under
+the current directory and all subdirectories of this directory.
+
+=item *
+
+One or more B<[SOURCE]...> paths, recursively match all plaintext files
+residing under all B<[SOURCE]...> paths that are directories.
+
+=back
+
+=back
+
+=head1 ARGUMENTS
+
+=over 2
+
+=item B<SEARCH-REGEX>
+
+Mandatory Perl Compatible Regular Expression (PCRE) search pattern matching all
+filenames and/or file contents to be replaced by the passed B<REPLACE-PATTERN>.
+
+=item B<REPLACE-PATTERN>
+
+Mandatory Perl Compatible Regular Expression (PCRE) substitution pattern
+replacing all filename and/or file content substrings matched by the passed
+B<SEARCH-REGEX>.
+
+=item B<[SOURCE]...>
+
+Optional whitespace-delimited list of one or more source filenames to be
+operated upon. Defaults to either:
+
+=over 2
+
+=item *
+
+If passed B<--recursive>, all plaintext files recursively discovered under the
+current directory and all subdirectories of this directory.
+
+=item *
+
+Else, all plaintext files non-recursively discovered under only the current
+directory.
+
+=back
+
+=item B<DIRECTORY>
+
+Optional dirname of the target directory to copy or move source filenames into
+when replacing filenames. Defaults to the current directory. Ignored if passed
+B<--file-contents>.
+
+=back
+
+=head1 DESCRIPTION
+
+This script both:
+
+=over 2
+
+=item *
+
+Moves and copies files by replacing all substrings matching the passed
+Perl Compatible Regular Expression (PCRE) search pattern in all passed source
+filenames with the passed PCRE replacement pattern.
+
+=item *
+
+Rewrites file contents in-place by replacing all substrings matching the passed
+PCRE search pattern in the plaintext contents of all passed source filenames
+with the passed PCRE replacement pattern.
+
+=back
+
+=head1 EXAMPLES
+
+  # Copy all paths matching "~/tmp/*.tmp" "~/tmp/*.tmp.old".
+  cd ~/tmp
+  cp-pcre '\.tmp$' '.tmp.old'
+
+  # Copy all paths matching "~/tmp/*.tmp" "~/tmp/*.tmp.old", functionally
+  # equivalent to the prior example.
+  cp-pcre --file-names --cp '^(.*)\.tmp$' '\1.tmp.old' ~/tmp
+
+  # Rename all files and paths in any directories below and including the
+  # current directory matching pattern "01--whatis.txt", "02--updoc.txt", etc.,
+  # to "whatis~01.doc", "updoc~02.doc", etc.; and also change any strings in
+  # the contents of any text files in any directories below and including the
+  # current directory matching that same pattern to that some replacement text.
+  # (Power; glorious, gladdening, rawly maddening power.)
+  mv-pcre --recursive --file-names --file-contents '^(\d)--(\w)\.txt$' '\2~\1.doc'
+
+=head1 BUGS
+
+B<Absolutely none.> Very well... probably more than several. Although this
+script formed the core backbone of my CLI-based development workflow for two
+decades, your mileage may (tragically) vary.
+
+Please submit issues to L<our GitHub-hosted bug
+tracker|https://github.com/leycec/mv-pcre/issues> when things inevitably go
+south of computational heaven.
+
+=head1 SEE ALSO
+
+=over 2
+
+=item *
+
+L<perlre>, L<perlrequick>, and L<perlretut> man pages for further details on
+PCRE syntax and semantics.
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
