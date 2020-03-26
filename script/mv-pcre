@@ -1,26 +1,31 @@
 #!/usr/bin/env perl
+# --------------------( LICENSE                           )--------------------
+# Copyright (c) 2007-2020 Cecil Curry
+# See "LICENSE" for further details.
 
 # ....................{ PRAGMAS                           }....................
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # CAVEATS: This version requirement *MUST* be synchronized between:
 # * The following "use" statement.
-# * All external build requirements file(s).
+# * The leading "requires" statement in the top-level "cpanfile" file.
+# * The "Oldest stable release of the Perl interpreter supported by this
+#   project." in the "perl:" list of the top-level ".travis.yml" file.
 # * All downstream third-party packages, including:
 #   * Gentoo Linux ebuilds packaging this script.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+#
 # Enforce the minimum version of Perl required by this script. Since Perl
 # currently lacks any automated means of deciding this, this version *MUST* be
 # manually decided by taking the minimum of the following:
 #
 # * The "Minimum version of perl" output by the third-party "perlver" script.
-#   Currently, this is Perl 5.8.0.
+#   Currently, this is Perl 5.8.1.
 # * The minimum of the first Perl version required by all core Perl modules
 #   required below. See the "DEPENDENCIES" section for further details.
 #   Currently, this is Perl 5.6.0.
 #
 # For safety, this *MUST* be the first statement of this script.
-use v5.8.0;
+use v5.8.1;
 
 # Enforce strictness for sanity. These should be the default, but... *shrug*
 #
@@ -29,6 +34,17 @@ use strict;
 use warnings;
 
 # ....................{ TODO                              }....................
+#FIXME: Globally rename this project to something saner and more succinct
+#*BEFORE* the first public release. "mv-pcre" contains a hyphen and is thus
+#inadmissable on CPAN; moreover, it's simply too long. Consider:
+#
+#* Renaming the repository to "mauveray" or "mauveregency" or... something.
+#* Renaming the scripts to "mvre" and "cpre" or... something. Yes, there
+#  already exists an unmaintained Python script named "mvre", but such is life.
+
+#FIXME: Minimally document "lib/App/mvpcre.pm" with a sane POD placeholder,
+#ideally referencing this canonical documentation.
+
 #FIXME: Add the following new options required for testing:
 #
 #* "-i,--interactive", unconditionally prompting for confirmation after the
@@ -192,6 +208,13 @@ use Pod::Usage qw(pod2usage);    # ...first bundled with Perl 5.6.0.
 #conditionally support these alternatives, falling back to "Term::ReadLine".
 use Term::ReadLine;              # ...first bundled with Perl 5.2.0.
 
+# ....................{ EXPORTS                           }....................
+# Global variables exported to external callers.
+
+# Current version of this script, exported to enable inspection by Minilla on
+# producing a new release.
+our $VERSION = '1.0.0';
+
 # ....................{ CONSTANTS                         }....................
 use constant {
     true => '1',
@@ -202,8 +225,6 @@ use constant {
 };
 
 # ....................{ VARIABLES                         }....................
-my $VERSION = '1.0.0';
-
 #FIXME: This doesn't seem particularly robust. StackOverflow, help us now!
 #FIXME: Capitalize.
 my $script_name = basename $0;
@@ -610,7 +631,8 @@ sub substitute_filenames() {
 !$options{'file-names'} &&
     die "nothing to do! (not substituting on filenames or file contents)";
 
-  1
+# ....................{ POSTAMBLE                         }....................
+success;
 __END__
 
 # ....................{ POD                               }....................
@@ -839,7 +861,7 @@ PCRE syntax and semantics.
 
 =back
 
-=head1 COPYRIGHT AND LICENSE
+=head1 LICENSE
 
 Copyright (c) 2007-2020 Cecil Curry
 

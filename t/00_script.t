@@ -36,6 +36,7 @@ use constant {
 #   testing functions), excluding "Test2::Tools::ClassicCompare".
 use Test2::V0;
 
+# Third-party dependency testing external script execution.
 use Test::Script qw(
     script_compiles
     script_runs

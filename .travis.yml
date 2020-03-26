@@ -17,7 +17,7 @@ perl:
   # Newest stable release of the Perl interpreter supported by this project.
   - "5.30"
   # Oldest stable release of the Perl interpreter supported by this project.
-  - "5.20"
+  - "5.8"
 
 # ....................{ CACHE                             }....................
 # Cache previously downloaded project dependencies across CI runs.
