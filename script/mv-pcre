@@ -5,7 +5,7 @@
 
 # ....................{ PRAGMAS                           }....................
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# CAVEATS: This version requirement *MUST* be synchronized between:
+# WARNING: This version requirement *MUST* be synchronized between:
 # * The following "use" statement.
 # * The leading "requires" statement in the top-level "cpanfile" file.
 # * The "Oldest stable release of the Perl interpreter supported by this
@@ -274,20 +274,25 @@ my %options;
 #
 # * "bundling", enabling first-level bundling (e.g., auto-expanding a passed
 #   "-vax" list of bundled options to "-v -a -x").
-# * "require_order", requiring all options be passed prior to arguments. By
-#   default, options and arguments are permitted to be freely intermingled.
-#   Since the default is POSIX-incompatible (and frankly insane), we revert to
-#   the POSIX default.
 #
-# Note that the "auto_help" option automatically calling pod2usage() does *NOT*
-# behave as expected, for unknown reasons. Ergo we do so manually instead.
+# Note that:
+#
+# * *ORDER IS SIGNIFICANT.* In particular, the "posix_default" and "gnu_compat"
+#   options *MUST* be the first and second options in that exact order. If
+#   *NOT* the case, Getopt::Long() will fail to parse otherwise valid options:
+#        $ mv-pcre -cr '\b2014-2020\b' '2020' datetime/
+#        Option c does not take an argument
+#        mv-pcre: See "mv-pcre --help" for further details.
+#   All remaining options may be specified in any arbitrary order.
+# * The "auto_help" option automatically calling pod2usage() does *NOT*
+#   behave as expected, for unknown reasons. Ergo we do so manually instead.
 Getopt::Long::Configure qw(
+    posix_default
+    gnu_compat
+
     auto_version
     bundling
-    gnu_compat
     no_ignore_case
-    posix_default
-    require_order
 );
 
 # Parse options. If the caller passed one or more invalid options (as insanely
@@ -300,7 +305,7 @@ Getopt::Long::GetOptions(
     'file-contents|c!',
     'file-names|n!',
     'help|?' => \&_print_usage_help,
-    'recursive|r|R',
+    'recursive|r',
     'quiet|q',
 ) or _print_usage_error();
 

@@ -11,14 +11,14 @@
 #   format for this file.
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# CAVEATS: On modifying this file, run the following command to regenerate all
+# WARNING: On modifying this file, run the following command to regenerate all
 # downstream files hosted at this repository (e.g., "META.json", "README.md"):
 #     $ minil build
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # ....................{ DEPENDENCIES                      }....................
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# CAVEATS: This version requirement *MUST* be synchronized between multiple
+# WARNING: This version requirement *MUST* be synchronized between multiple
 # files on each change. See "script/mv-pcre" for further details.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
