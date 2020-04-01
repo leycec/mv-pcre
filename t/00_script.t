@@ -5,7 +5,7 @@
 #
 # --------------------( SYNOPSIS                          )--------------------
 # "Test2"-based functional (also referred to as "integration") tests externally
-# exercising the "mv-pcre" script CLI.
+# exercising the "mvre" script CLI.
 #
 # --------------------( SEE ALSO                          )--------------------
 # * "perldoc Test2::Suite", high-level documentation for the "Test2" framework.
@@ -71,7 +71,7 @@ use Test::Script qw(
 # ....................{ GLOBALS                           }....................
 # Relative filename of this project's script, relative to this project's
 # top-level repository directory.
-my $SCRIPT_FILENAME = 'script/mv-pcre';
+my $SCRIPT_FILENAME = 'script/mvre';
 
 # Substring prefixing the names of all tests performed in this file.
 my $TEST_NAME_PREFIX = "Script \"$SCRIPT_FILENAME\"";

@@ -19,7 +19,7 @@
 # ....................{ DEPENDENCIES                      }....................
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: This version requirement *MUST* be synchronized between multiple
-# files on each change. See "script/mv-pcre" for further details.
+# files on each change. See "script/mvre" for further details.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
 # Minimum version of Perl required by this script.

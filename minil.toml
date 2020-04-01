@@ -11,7 +11,7 @@
 
 # ....................{ PROJECT                           }....................
 # Project name.
-name = "mv-pcre"
+name = "App::mvre"
 
 # Project license name in CPAN::Meta::Spec-specific format. For a list of all
 # supported names, see also:
@@ -20,8 +20,8 @@ license = "mit"
 
 # ....................{ PROJECT ~ docs                    }....................
 # Relative filename of the file embedding POD-formatted project documentation.
-abstract_from = "script/mv-pcre"
-authors_from  = "script/mv-pcre"
+abstract_from = "script/mvre"
+authors_from  = "script/mvre"
 
 # List of the domain names of all third-party continuous integration (CI) hosts
 # serviced by this project, whose badges will be embedded in the top-level

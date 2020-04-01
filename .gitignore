@@ -16,7 +16,7 @@
 
 # ....................{ PATHS ~ top-level                 }....................
 # Project-specific top-level paths.
-/mv-pcre-*
+/mvre-*
 
 # ....................{ DIRS ~ top-level                  }....................
 # carton-specific top-level directories.

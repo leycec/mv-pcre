@@ -1,4 +1,4 @@
-package App::mvpcre;
+package App::mvre;
 use 5.008001;
 use strict;
 use warnings;
@@ -14,15 +14,15 @@ __END__
 
 =head1 NAME
 
-App:mvpcre - It's new $module
+App::mvre - It's new $module
 
 =head1 SYNOPSIS
 
-    use App:mvpcre;
+    use App::mvre;
 
 =head1 DESCRIPTION
 
-App:mvpcre is ...
+App::mvre is ...
 
 =head1 LICENSE
 

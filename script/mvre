@@ -16,11 +16,11 @@
 #
 # Enforce the minimum version of Perl required by this script. Since Perl
 # currently lacks any automated means of deciding this, this version *MUST* be
-# manually decided by taking the minimum of the following:
+# manually decided by taking the maximum of the following:
 #
 # * The "Minimum version of perl" output by the third-party "perlver" script.
 #   Currently, this is Perl 5.8.1.
-# * The minimum of the first Perl version required by all core Perl modules
+# * The maximum of the first Perl version required by all core Perl modules
 #   required below. See the "DEPENDENCIES" section for further details.
 #   Currently, this is Perl 5.6.0.
 #
@@ -34,16 +34,16 @@ use strict;
 use warnings;
 
 # ....................{ TODO                              }....................
-#FIXME: Globally rename this project to something saner and more succinct
-#*BEFORE* the first public release. "mv-pcre" contains a hyphen and is thus
-#inadmissable on CPAN; moreover, it's simply too long. Consider:
-#
-#* Renaming the repository to "mauveray" or "mauveregency" or... something.
-#* Renaming the scripts to "mvre" and "cpre" or... something. Yes, there
-#  already exists an unmaintained Python script named "mvre", but such is life.
+#FIXME: Rename this GitHub repository to "mauverex" after receiving a PAUSE
+#account. Yes, this is the ideal name. It is unique and memetastic; let's a-go!
+#FIXME: Create a mauve-colored dynosaur icon as the project favicon.
 
 #FIXME: Minimally document "lib/App/mvpcre.pm" with a sane POD placeholder,
 #ideally referencing this canonical documentation.
+
+#FIXME: Emit explicit warnings when ownership or permission issues prevent a
+#filename or file content operation. This script currently silently ignores
+#such issues, which is... less than ideal.
 
 #FIXME: Add the following new options required for testing:
 #
@@ -280,9 +280,9 @@ my %options;
 # * *ORDER IS SIGNIFICANT.* In particular, the "posix_default" and "gnu_compat"
 #   options *MUST* be the first and second options in that exact order. If
 #   *NOT* the case, Getopt::Long() will fail to parse otherwise valid options:
-#        $ mv-pcre -cr '\b2014-2020\b' '2020' datetime/
+#        $ mvre -cr '\b2014-2020\b' '2020' datetime/
 #        Option c does not take an argument
-#        mv-pcre: See "mv-pcre --help" for further details.
+#        mvre: See "mvre --help" for further details.
 #   All remaining options may be specified in any arbitrary order.
 # * The "auto_help" option automatically calling pod2usage() does *NOT*
 #   behave as expected, for unknown reasons. Ergo we do so manually instead.
@@ -643,13 +643,13 @@ __END__
 # ....................{ POD                               }....................
 =head1 NAME
 
-mv-pcre - Move files or replace file contents with regular expressions
-cp-pcre - Copy files or replace file contents with regular expressions
+mvre - Move files or replace file contents with regular expressions
+cpre - Copy files or replace file contents with regular expressions
 
 =head1 SYNOPSIS
 
-  cp-pcre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
-  mv-pcre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
+  cpre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
+  mvre [OPTION]... SEARCH-REGEX REPLACE-PATTERN [SOURCE]... [DIRECTORY]
 
   options:
 
@@ -658,9 +658,9 @@ cp-pcre - Copy files or replace file contents with regular expressions
   -n,--file-names        replace filenames by copying or moving [default]
   --no-file-names        do not replace filenames
   --cp                   copy rather than move files when replacing filenames
-                         [default if run as "cp-pcre"]
+                         [default if run as "cpre"]
   --mv                   move rather than copy files when replacing filenames
-                         [default if run as "mv-pcre"]
+                         [default if run as "mvre"]
   -r,--recursive         if passed no [SOURCE]... files, recursively match all
                          text files under current directory and subdirectories
                          (defaults to non-recursive matching)
@@ -685,14 +685,14 @@ cp-pcre - Copy files or replace file contents with regular expressions
 
 Replace filenames by copying rather than moving files.
 
-If passed neither B<--cp> nor B<--mv> and I<not> run as F<mv-pcre>, this option
+If passed neither B<--cp> nor B<--mv> and I<not> run as F<mvre>, this option
 is enabled by default.
 
 =item B<--mv>
 
 Replace filenames by moving rather than copying files.
 
-If passed neither B<--cp> nor B<--mv> and run as F<mv-pcre>, this option is
+If passed neither B<--cp> nor B<--mv> and run as F<mvre>, this option is
 enabled by default.
 
 =item B<--file-contents>
@@ -700,7 +700,7 @@ enabled by default.
 Rewrite file contents in-place by replacing all substrings matching the passed
 Perl Compatible Regular Expression (PCRE) search pattern in the plaintext
 contents of all passed source filenames with the passed PCRE replacement
-pattern (e.g., C<mv-pcre -cr '^(\d)--(\w)\.txt$' '\2~\1.doc'>, recursively
+pattern (e.g., C<mvre -cr '^(\d)--(\w)\.txt$' '\2~\1.doc'>, recursively
 rewriting all matching lines of all plaintext files under the current
 directory).
 
@@ -713,7 +713,7 @@ Disabled by default. See also B<--file-names>.
 Move or copy files by replacing all substrings matching the passed
 Perl Compatible Regular Expression (PCRE) search pattern in all passed source
 filenames with the passed PCRE replacement pattern (e.g.,
-C<mv-pcre -r '^(\d+)\s*(.+?)\.mp3$' '\1~\2.mp3.bak'>, recursively renaming all
+C<mvre -r '^(\d+)\s*(.+?)\.mp3$' '\1~\2.mp3.bak'>, recursively renaming all
 matching MP3 files under the current directory).
 
 If passed:
@@ -831,11 +831,11 @@ with the passed PCRE replacement pattern.
 
   # Copy all paths matching "~/tmp/*.tmp" "~/tmp/*.tmp.old".
   cd ~/tmp
-  cp-pcre '\.tmp$' '.tmp.old'
+  cpre '\.tmp$' '.tmp.old'
 
   # Copy all paths matching "~/tmp/*.tmp" "~/tmp/*.tmp.old", functionally
   # equivalent to the prior example.
-  cp-pcre --file-names --cp '^(.*)\.tmp$' '\1.tmp.old' ~/tmp
+  cpre --file-names --cp '^(.*)\.tmp$' '\1.tmp.old' ~/tmp
 
   # Rename all files and paths in any directories below and including the
   # current directory matching pattern "01--whatis.txt", "02--updoc.txt", etc.,
@@ -843,7 +843,7 @@ with the passed PCRE replacement pattern.
   # the contents of any text files in any directories below and including the
   # current directory matching that same pattern to that some replacement text.
   # (Power; glorious, gladdening, rawly maddening power.)
-  mv-pcre --recursive --file-names --file-contents '^(\d)--(\w)\.txt$' '\2~\1.doc'
+  mvre --recursive --file-names --file-contents '^(\d)--(\w)\.txt$' '\2~\1.doc'
 
 =head1 BUGS
 
@@ -852,7 +852,7 @@ script formed the core backbone of my CLI-based development workflow for two
 decades, your mileage may (tragically) vary.
 
 Please submit issues to L<our GitHub-hosted bug
-tracker|https://github.com/leycec/mv-pcre/issues> when things inevitably go
+tracker|https://github.com/leycec/mvre/issues> when things inevitably go
 south of computational heaven.
 
 =head1 SEE ALSO
